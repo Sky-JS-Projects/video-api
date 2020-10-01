@@ -5,7 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "env-cmd nodemon src/index.ts"
+    "dev": "env-cmd nodemon src/index.ts",
+    "build": "tsc",
+    "start": "node out/index.js"
   },
   "keywords": [],
   "author": "",
