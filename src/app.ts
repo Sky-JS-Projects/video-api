@@ -48,7 +48,17 @@ app.patch('/videos/:id', async (req: Request, res: Response, next: NextFunction)
 
 	await video.save({ validateModifiedOnly: true });
 
-	res.json({ _id: video._id, title, description: video.description });
+	res.json(video);
+}, errorMiddleware);
+
+app.delete('/videos/:id', async (req: Request, res: Response, next: NextFunction) => {
+	const video = await Video.findMetaByIdAndDelete(req.params.id);
+
+	if (!video) {
+		return next(new ApiError({ status: 404, message: 'No file matches the id!' }));
+	}
+
+	res.json(video);
 }, errorMiddleware);
 
 app.get('/videos', async (req: Request, res: Response, next: NextFunction) => {

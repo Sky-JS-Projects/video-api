@@ -30,8 +30,14 @@ videoSchema.statics.getMetaById = (_id: string) => {
 videoSchema.statics.getMetaAll = () => {
 	return Video.find().select(['title', 'description']).exec();
 }
+
+videoSchema.statics.findMetaByIdAndDelete = (_id: string) => {
+	return Video.findByIdAndDelete(_id).select(['title', 'description']).exec();
+}
+
 export interface VideoModel extends Model<VideoSchema> {
 	getMetaById(_id: string): Promise<VideoSchema | null>;
+	findMetaByIdAndDelete(_id: string): Promise<VideoSchema | null>;
 	getMetaAll(): Promise<VideoSchema[]>
 }
 
