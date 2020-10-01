@@ -11,7 +11,7 @@ const videoSchema = new mongoose.Schema<VideoSchema>({
 	},
 	data: {
 		type: Buffer,
-		required: true
+		required: true,
 	}
 }, {
 	timestamps: true
@@ -20,9 +20,21 @@ const videoSchema = new mongoose.Schema<VideoSchema>({
 export interface VideoSchema extends Document {
 	title: string,
 	description?: string,
-	data: Buffer
+	data?: Buffer
 }
 
-const Video = mongoose.model<VideoSchema, Model<VideoSchema>>('video', videoSchema);
+videoSchema.statics.getMetaById = (_id: string) => {
+	return Video.findById(_id).select(['title', 'description']).exec();
+}
+
+videoSchema.statics.getMetaAll = () => {
+	return Video.find().select(['title', 'description']).exec();
+}
+export interface VideoModel extends Model<VideoSchema> {
+	getMetaById(_id: string): Promise<VideoSchema | null>;
+	getMetaAll(): Promise<VideoSchema[]>
+}
+
+const Video = mongoose.model<VideoSchema, VideoModel>('video', videoSchema);
 
 export default Video;

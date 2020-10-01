@@ -6,6 +6,8 @@ import ApiError from "./models/api_error";
 
 const app = express();
 
+app.use(express.json());
+
 app.post('/video', videoUpload.single('video'), async (req: Request, res: Response, next: NextFunction) => {
 	const title = req.body.title;
 	const data = req.file.buffer;
@@ -26,33 +28,57 @@ app.post('/video', videoUpload.single('video'), async (req: Request, res: Respon
 }, errorMiddleware)
 
 app.patch('/videos/:id', async (req: Request, res: Response, next: NextFunction) => {
-	const video = await Video.findById(req.params.id).exec();
+	const video = await Video.getMetaById(req.params.id);
 
 	if (!video) {
 		return next(new ApiError({ status: 404, message: 'No file matches the id!' }));
 	}
 
-	const title = req.body.title;
-	const description = req.body.description;
+	const title = req.body.title as string;
+	const description = req.body.description as string;
+
+	if (!title) {
+		return next(new ApiError({ status: 500, message: "title key is compulsory" }));
+	}
 
 	video.set({
 		title,
 		description
 	})
 
-	await video.save({validateModifiedOnly: true});
+	await video.save({ validateModifiedOnly: true });
 
 	res.json({ _id: video._id, title, description: video.description });
 }, errorMiddleware);
 
+app.get('/videos', async (req: Request, res: Response, next: NextFunction) => {
+	const videos = await Video.getMetaAll();
+
+	if (!videos) {
+		return next(new ApiError({ status: 404, message: 'Nothing found!' }));
+	}
+
+	res.json(videos)
+}, errorMiddleware);
+
 app.get('/videos/:id', async (req: Request, res: Response, next: NextFunction) => {
+	const video = await Video.getMetaById(req.params.id);
+
+	if (!video) {
+		return next(new ApiError({ status: 404, message: 'No file matches the id!' }));
+	}
+
+	res.json(video)
+}, errorMiddleware);
+
+app.get('/videos/:id/content', async (req: Request, res: Response, next: NextFunction) => {
 	const video = await Video.findById(req.params.id).exec();
 
 	if (!video) {
 		return next(new ApiError({ status: 404, message: 'No file matches the id!' }));
 	}
 
-	res.json(video.toJSON());
+	res.send(video.data);
 }, errorMiddleware);
 
 export default app;
